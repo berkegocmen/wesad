@@ -7,7 +7,7 @@ def extract_concat_pkl(path: str = '../data/S2/S2.pkl') -> pd.DataFrame:
     """
     Extracts the data from the pickle file and concatenates it into a single dataframe.
     :param path:
-    :return:
+    :return df:
     """
 
     # Load the pickle file
@@ -60,13 +60,12 @@ def extract_concat_pkl(path: str = '../data/S2/S2.pkl') -> pd.DataFrame:
     # Resample the wrist data to the same frequency as the chest data
     wrist_acc = wrist_acc.resample('1428571ns').ffill()
     wrist_bvp = wrist_bvp.resample('1428571ns').ffill()
-    wrist_eda.set_index('time_stamps', inplace=True)
     wrist_eda = wrist_eda.resample('1428571ns').ffill()
-    wrist_temp.set_index('time_stamps', inplace=True)
     wrist_temp = wrist_temp.resample('1428571ns').ffill()
 
+    labels = pd.DataFrame(labels)
     # Concatenate the dataframes
-    df = pd.concat([chest_df, wrist_acc, wrist_bvp, wrist_eda, wrist_temp], axis=1)
+    df = pd.concat([chest_df, wrist_acc, wrist_bvp, wrist_eda, wrist_temp, labels], axis=1)
 
     # return the dataframe
     return df
