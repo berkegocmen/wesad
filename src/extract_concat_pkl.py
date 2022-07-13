@@ -69,3 +69,11 @@ def extract_concat_pkl(path: str = '../data/S2/S2.pkl') -> pd.DataFrame:
 
     # return the dataframe
     return df
+
+
+if __name__ == '__main__':
+    for S in range(18):
+        if S not in [0, 1, 12]:
+            print(f'S{S}')
+            df = extract_concat_pkl(f'../data/S{S}/S{S}.pkl')
+            df.to_csv(f'../data/S_csvs/S{S}.csv')
