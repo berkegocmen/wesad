@@ -1,10 +1,10 @@
 from src.feature_engineering import generate_features
-import pandas as pd
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 import joblib
 import os
 import src.config as config
+import time
 
 
 def run():
@@ -26,7 +26,9 @@ def run():
     lr = LogisticRegression(solver='saga', max_iter=10, verbose=1, n_jobs=-1)
 
     # fit the model
+    start = time.time()
     lr.fit(df_train[features].values, df_train.label.values)
+    finish = time.time() - start
 
     # get the training results
     training_pred = lr.predict(df_train[features].values)
@@ -39,6 +41,8 @@ def run():
 
     # validation accuracy
     validation_acc = accuracy_score(df_valid.label.values, validation_pred)
+
+    print(f'Training Accuracy:{training_acc}, Validation Accuracy:{validation_acc}, Training time:{finish} seconds')
 
     # save the model
     joblib.dump(
