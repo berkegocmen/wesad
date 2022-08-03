@@ -1,19 +1,23 @@
-from feature_engineering import generate_features
+import feature_engineering
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 import joblib
 import os
 import src.config as config
 import time
+import pandas as pd
 
 
 def run():
     # Get training file and generate features
-    df_train = generate_features(config.TRAINING_FILE)
+    # Get training file and generate features
+    df_1 = feature_engineering.generate_features(config.TRAINING_FILE, original=True)
+    df_2 = feature_engineering.generate_features(config.TRAINING_FILE_2, original=True)
+    df_train = pd.concat([df_1.reset_index(drop=True), df_2.reset_index(drop=True)])
     print(df_train.label.value_counts())
 
     # Get test file and generate features
-    df_valid = generate_features(config.VALIDATION_FILE)
+    df_valid = feature_engineering.generate_features(config.VALIDATION_FILE, original=True)
 
     # fill nan's in the df_
     df_train.fillna(method='bfill', inplace=True)
@@ -49,7 +53,7 @@ def run():
     # save the model
     joblib.dump(
         clf,
-        os.path.join(config.MODEL_OUTPUT, 'rfc_initial.bin')
+        os.path.join(config.MODEL_OUTPUT, 'rfc_simple.bin')
     )
 
 
