@@ -1,12 +1,15 @@
-import pandas as pd
-import feature_engineering
-from lightgbm import LGBMClassifier
-from sklearn.metrics import accuracy_score
+import argparse
+import time
 import joblib
 import os
-import src.config as config
-import time
+
+import config
+import pandas as pd
+from lightgbm import LGBMClassifier
+from sklearn.metrics import accuracy_score
 from sklearn.metrics import roc_auc_score
+from sklearn.metrics import confusion_matrix
+import matplotlib.pyplot as plt
 
 PARAMS = {'max_bin': 141, 'max_depth': 180, 'lambda_l1': 19.23179979173314, 'lambda_l2': 28.82949791945566,
           'num_leaves': 244, 'feature_fraction': 0.5822945319860839, 'bagging_fraction': 0.778955613699345,
@@ -20,9 +23,9 @@ def run(fold):
     df_train = df[df.kfold != fold]  # get the training data
     df_valid = df[df.kfold == fold]  # get the validation data
 
-    # fill nan's in the df_
-    # df_train.fillna(method='bfill', inplace=True)
-    # df_valid.fillna(method='bfill', inplace=True)
+    # Get unique labels
+    labels = df_train['label'].unique()
+    labels_map = {1: 'baseline', 2: 'stress', 3: 'amusement', 4: 'meditation'}
 
     # get the feature names
     features = [f for f in df_train.columns if f not in ['label', 'kfold']]
@@ -61,14 +64,36 @@ def run(fold):
         f'\nTraining AUC:{training_auc}, Valdidation_auc:{validation_auc}'
         f'\nTraining time:{finish} seconds')
 
-    # # save the model
-    # joblib.dump(
-    #     clf,
-    #     os.path.join(config.MODEL_OUTPUT, 'lgbm_simple_full_data.bin')
-    # )
+    cm = confusion_matrix(df_valid['label'], validation_pred)
+    print(cm)
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    cax = ax.matshow(cm)
+    plt.title('Confusion matrix of the classifier')
+    fig.colorbar(cax)
+    plt.set_cmap('Blues')
+    ax.set_xticklabels([''] + labels.map(labels_map).tolist())
+    ax.set_yticklabels([''] + labels.map(labels_map).tolist())
+    plt.xlabel('Predicted')
+    plt.ylabel('True')
+    plt.show()
+    plt.savefig(f'../figures/lgbm_optuna_cf_{fold}_confusion_matrix.png')
+
+    # save the model
+    joblib.dump(
+        clf,
+        os.path.join(config.MODEL_OUTPUT, f'lgbm_optuna_cf_{fold}.bin')
+    )
 
 
 if __name__ == '__main__':
-    for fold_ in range(8):
-        print(fold_)
-        run(fold_)
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument(
+        '--fold',
+        type=int
+    )
+
+    args = parser.parse_args()
+    print(args.fold)
+    run(args.fold)
