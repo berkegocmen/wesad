@@ -20,5 +20,5 @@ training_files = {'tf_1': '../data/S_csvs/S2.csv',
                   'tf_12': '../data/S_csvs/S14.csv',
                   'tf_13': '../data/S_csvs/S15.csv'}
 
-validation_files = {'vf_1': '../data/S_csvs/5.csv',
-                    'vf_2': '../data/S_csvs/6.csv'}
+validation_files = {'vf_1': '../data/S_csvs/S5.csv',
+                    'vf_2': '../data/S_csvs/S6.csv'}
