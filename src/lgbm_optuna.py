@@ -31,7 +31,7 @@ print(df_valid['label'].value_counts())
 # 1. Define an objective function to be maximized.
 
 def objective(trial):
-    ...
+
 
     # 2. Suggest values of the hyperparameters using a trial object.
     param = {
@@ -54,7 +54,7 @@ def objective(trial):
     gbm = lgb.LGBMClassifier(**param)
     gbm.fit(df_train[features].values, df_train['label'].values)
 
-    # valdidate
+    # validate
     preds = gbm.predict(df_valid[features].values)
     accuracy = accuracy_score(df_valid['label'].values, preds)
 
