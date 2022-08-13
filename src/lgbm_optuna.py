@@ -1,26 +1,12 @@
 import lightgbm as lgb
 import optuna
-import feature_engineering
 import pandas as pd
-import config
 from sklearn.metrics import accuracy_score
+from sklearn.metrics import roc_auc_score
 
-df_train = pd.DataFrame()
-
-for S in range(1, 14):
-    print(S)
-    df = feature_engineering.generate_features(config.training_files[f'tf_{S}'], original=True)
-    df_train = pd.concat([df_train.reset_index(drop=True), df.reset_index(drop=True)])
-
-# df_1 = feature_engineering.generate_features(config.TRAINING_FILE, original=False)
-# df_2 = feature_engineering.generate_features(config.TRAINING_FILE_2, original=False)
-# df_train = pd.concat([df_1.reset_index(drop=True), df_2.reset_index(drop=True)])
-# print(df_train.label.value_counts())
-
-# Get test file and generate features
-df_valid = feature_engineering.generate_features(config.VALIDATION_FILE, original=True)
-df_valid_2 = feature_engineering.generate_features(config.VALIDATION_FILE, original=True)
-df_valid = pd.concat([df_valid.reset_index(drop=True), df_valid_2.reset_index(drop=True)])
+df_train = pd.read_csv('../data/s_train.csv')
+df_valid = pd.read_csv('../data/s_valid.csv')
+df_test = pd.read_csv('../data/s_valid.csv')
 
 features = [f for f in df_train.columns if f not in ['label']]
 
@@ -31,8 +17,6 @@ print(df_valid['label'].value_counts())
 # 1. Define an objective function to be maximized.
 
 def objective(trial):
-
-
     # 2. Suggest values of the hyperparameters using a trial object.
     param = {
         'boosting_type': 'dart',
@@ -40,8 +24,8 @@ def objective(trial):
         'verbosity': 1,
         'max_bin': trial.suggest_int('max_bin', 2, 256),
         'max_depth': trial.suggest_int('max_depth', 2, 256),
-        'lambda_l1': trial.suggest_float('lambda_l1', 1e-8, 30.0, log=True),
-        'lambda_l2': trial.suggest_float('lambda_l2', 1e-8, 30.0, log=True),
+        'lambda_l1': trial.suggest_float('lambda_l1', 1e-8, 50.0, log=True),
+        'lambda_l2': trial.suggest_float('lambda_l2', 1e-8, 50.0, log=True),
         'num_leaves': trial.suggest_int('num_leaves', 2, 256),
         'feature_fraction': trial.suggest_float('feature_fraction', 0.4, 1.0),
         'bagging_fraction': trial.suggest_float('bagging_fraction', 0.4, 1.0),
@@ -55,11 +39,21 @@ def objective(trial):
     gbm.fit(df_train[features].values, df_train['label'].values)
 
     # validate
-    preds = gbm.predict(df_valid[features].values)
-    accuracy = accuracy_score(df_valid['label'].values, preds)
+    validation_acc_prob = gbm.predict_proba(df_valid[features].values)
+    validation_auc = roc_auc_score(df_valid.label.values, validation_acc_prob, multi_class='ovr')
+
+    # test
+    test_acc_prob = gbm.predict_proba(df_test[features].values)
+    test_auc = roc_auc_score(df_test.label.values, test_acc_prob, multi_class='ovr')
+
+    # print the results
+    print(f'Validation AUC: {validation_auc}, Test AUC: {test_auc}')
+
+    # preds = gbm.predict(df_valid[features].values)
+    # accuracy = accuracy_score(df_valid['label'].values, preds)
 
     ...
-    return accuracy
+    return validation_auc
 
 
 # 3. Create a study object and optimize the objective function.
