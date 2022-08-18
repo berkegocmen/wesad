@@ -1,10 +1,10 @@
 MODEL_OUTPUT = '../models/'
 
-TRAINING_FILE = '../data/S_csvs/S2.csv'
+TRAINING_FILE = '../data/S_train.csv'
 
-TRAINING_FILE_2 = '../data/S_csvs/S3.csv'
+VALIDATION_FILE = '../data/S_valid.csv'
 
-VALIDATION_FILE = '../data/S_csvs/S16.csv'
+TEST_FILE = '../data/S_test.csv'
 
 training_files = {'tf_1': '../data/S_csvs/S2.csv',
                   'tf_2': '../data/S_csvs/S3.csv',
@@ -17,10 +17,19 @@ training_files = {'tf_1': '../data/S_csvs/S2.csv',
                   'tf_9': '../data/S_csvs/S10.csv',
                   'tf_10': '../data/S_csvs/S11.csv',
                   'tf_11': '../data/S_csvs/S13.csv',
+                  'tf_12': '../data/S_csvs/S16.csv',
+                  'tf_13': '../data/S_csvs/S17.csv',
                   }
 
-validation_files = {'vf_1': '../data/S_csvs/S16.csv',
-                    'vf_2': '../data/S_csvs/S17.csv'}
+# validation_files = {'vf_1': '../data/S_csvs/S16.csv',
+#                     'vf_2': '../data/S_csvs/S17.csv'}
 
 test_files = {'f_1': '../data/S_csvs/S14.csv',
               'f_2': '../data/S_csvs/S15.csv'}
+
+PARAMS = {'max_bin': 9, 'max_depth': 87, 'lambda_l1': 1.1799718495758467, 'lambda_l2': 47.56543205622963,
+          'num_leaves': 112, 'feature_fraction': 0.511093310643247, 'bagging_fraction': 0.9761885828245985,
+          'bagging_freq': 10, 'min_child_samples': 10, 'learning_rate': 0.09363262777446904}
+
+THREE_CLASS_FOLDS = '../data/3class/train_folds.csv'
+THREE_CLASS_TEST = '../data/3class/test.csv'
