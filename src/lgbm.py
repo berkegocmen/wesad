@@ -1,41 +1,37 @@
 import pandas as pd
-import feature_engineering
 from lightgbm import LGBMClassifier
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, f1_score, confusion_matrix
 import joblib
 import os
 import src.config as config
 import time
+import wandb
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 
 def run():
-    # Get training file and generate features
-    df_train = pd.DataFrame()
+    # Get training, validation and test_file
+    df_train = pd.read_csv(config.TRAINING_FILE)
+    df_valid = pd.read_csv(config.VALIDATION_FILE)
+    df_test = pd.read_csv(config.TEST_FILE)
 
-    for S in range(1, 14):
-        print(S)
-        df = feature_engineering.generate_features(config.training_files[f'tf_{S}'], original=True)
-        df_train = pd.concat([df_train.reset_index(drop=True), df.reset_index(drop=True)])
-
-    # df_1 = feature_engineering.generate_features(config.TRAINING_FILE, original=False)
-    # df_2 = feature_engineering.generate_features(config.TRAINING_FILE_2, original=False)
-    # df_train = pd.concat([df_1.reset_index(drop=True), df_2.reset_index(drop=True)])
-    # print(df_train.label.value_counts())
-
-    # Get test file and generate features
-    df_valid = feature_engineering.generate_features(config.VALIDATION_FILE, original=True)
-    df_valid_2 = feature_engineering.generate_features(config.VALIDATION_FILE, original=True)
-    df_valid = pd.concat([df_valid.reset_index(drop=True), df_valid_2.reset_index(drop=True)])
-
-    # fill nan's in the df_
-    df_train.fillna(method='bfill', inplace=True)
-    df_valid.fillna(method='bfill', inplace=True)
-
-    # get the feature namesr
+    # CHEST FEATURES
+    # features = ['chest_ACC_0', 'chest_ACC_1', 'chest_ACC_2', 'chest_ECG', 'chest_EMG', 'chest_EDA', 'chest_Temp',
+    #                  'chest_Resp']
+    # WRIST FEATURES
+    # features = ['wrist_ACC_0', 'wrist_ACC_1', 'wrist_ACC_2', 'wrist_BVP', 'wrist_EDA', 'wrist_TEMP']
+    # get the feature names
     features = [f for f in df_train.columns if f not in ['label']]
 
-    # initiate a Logistic Regression
-    clf = LGBMClassifier()
+    # initiate wandb
+    wandb.init(project="wesad", entity="berkegocmen")
+    # name the run
+    wandb.run.name = 'lgbm'
+    wandb.run.save()
+
+    # Classifier only with chest features
+    clf = LGBMClassifier(**config.PARAMS)
 
     # fit the model
     print('Training started')
@@ -56,12 +52,39 @@ def run():
     # validation accuracy
     validation_acc = accuracy_score(df_valid.label.values, validation_pred)
 
+    # validation f1 score
+    validation_f1 = f1_score(df_valid.label.values, validation_pred, average='weighted')
+    # training f1 score
+    training_f1 = f1_score(df_train.label.values, training_pred, average='weighted')
+
+    # confusion matrix
+    cm = confusion_matrix(df_valid.label.values, validation_pred)
+
+    # plot the confusion matrix
+    plt.figure(figsize=(10, 10))
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
+    plt.title('Confusion Matrix')
+    plt.ylabel('True label')
+    plt.xlabel('Predicted label')
+    plt.show()
+    plt.savefig('confusion_matrix_lgbm.png')
+    # log the plot
+    # wandb.log({"Confusion Matrix": wandb.Image(plt)})
+    wandb.log({"confusion_matrix": wandb.plot.confusion_matrix(probs=None,
+                                                               y_true=df_valid.label.values, preds=validation_pred)})
+
+    # log the results
+    wandb.log({'Training Accuracy': training_acc, 'Validation Accuracy': validation_acc, 'Validation F1': validation_f1,
+               'Training F1': training_f1})
+    # finish the run
+    wandb.run.finish()
+
     print(f'Training Accuracy:{training_acc}, Validation Accuracy:{validation_acc}, Training time:{finish} seconds')
 
     # save the model
     joblib.dump(
         clf,
-        os.path.join(config.MODEL_OUTPUT, 'lgbm_simple_full_data.bin')
+        os.path.join(config.MODEL_OUTPUT, 'lgbm.bin')
     )
 
 
