@@ -30,7 +30,7 @@ def objective(trial):
         'feature_fraction': trial.suggest_float('feature_fraction', 0.4, 1.0),
         'bagging_fraction': trial.suggest_float('bagging_fraction', 0.4, 1.0),
         'bagging_freq': trial.suggest_int('bagging_freq', 1, 15),
-        'min_child_samples': trial.suggest_int('min_child_samples', 5, 100),
+        'min_child_samples': trial.suggest_int('min_child_samples', 50, 150),
         'learning_rate ': trial.suggest_float('learning_rate', 0.001, 0.1),
 
     }
