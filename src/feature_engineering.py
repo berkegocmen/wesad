@@ -84,12 +84,12 @@ def generate_features(path: str, sample_rate: str = '2857143ns', original: bool 
             [df[columns], df_lag_features, df_rolling_features,
              df_expanding_features, df.label], axis=1)
 
-        mask = df_transformed['label'].isin([0, 5, 6, 7])
+        mask = df_transformed['label'].isin([0, 4, 5, 6, 7])
         df_transformed = df_transformed[~mask]
 
         return df_transformed
 
     else:
-        mask = df['label'].isin([0, 5, 6, 7])
+        mask = df['label'].isin([0, 4, 5, 6, 7])
         df = df[~mask]
         return df
