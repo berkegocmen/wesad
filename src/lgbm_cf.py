@@ -1,16 +1,12 @@
 import argparse
 import time
-import joblib
-import os
-import wandb
 
-import config
 import pandas as pd
 from lightgbm import LGBMClassifier
-from sklearn.metrics import accuracy_score, f1_score, roc_auc_score
-from sklearn.metrics import confusion_matrix
-from sklearn.model_selection import train_test_split
-import matplotlib.pyplot as plt
+from sklearn.metrics import accuracy_score, f1_score
+
+import config
+import wandb
 
 PARAMS = {'max_bin': 141, 'max_depth': 180, 'lambda_l1': 29.23179979173314, 'lambda_l2': 38.82949791945566,
           'num_leaves': 244, 'feature_fraction': 0.5822945319860839, 'bagging_fraction': 0.778955613699345,
@@ -20,12 +16,17 @@ PARAMS_2 = {'lambda_l1': 19.23179979173314, 'lambda_l2': 28.82949791945566, 'num
             'feature_fraction': 0.4697931264052483, 'bagging_fraction': 0.5653221736593377, 'bagging_freq': 6,
             'min_child_samples': 54, 'learning_rate': 0.006610920247541726}
 
+PARAMS_3 = {'max_bin': 32, 'min_data_in_leaf': 64, 'max_depth': 16, 'lambda_l1': 79.2972909142077,
+            'lambda_l2': 60.4372871781158, 'num_leaves': 16, 'feature_fraction': 0.739362998550435,
+            'bagging_fraction': 0.9974025968350103, 'bagging_freq': 10, 'min_child_samples': 64,
+            'learning_rate': 0.005372223646404518}
+
 
 def run(fold):
     # WANDB
     wandb.init(project="wesad", entity='berkegocmen',
-               name=f"lgbm_default_cf_{fold}",
-               tags=["3class", "default_params", 'lgbm', '4HZ'],
+               name=f"lgbm_default_no-ACC_cf_{fold}",
+               tags=["3class", "default_params", 'lgbm', '4HZ', 'no-ACC'],
                group="3class_4hz")
 
     # Get training file and generate features
@@ -40,7 +41,9 @@ def run(fold):
     labels_map = {1: 'baseline', 2: 'stress', 3: 'amusement', 4: 'meditation'}
 
     # get the feature names
-    features = [f for f in df_train.columns if f not in ['label', 'kfold']]
+    features = [f for f in df_train.columns if
+                f not in ['label', 'kfold', 'chest_ACC_0', 'chest_ACC_1', 'chest_ACC_2', 'wrist_ACC_0', 'wrist_ACC_1',
+                          'wrist_ACC_2']]
 
     # initiate a Logistic Regression
     clf = LGBMClassifier()
@@ -102,13 +105,13 @@ def run(fold):
     # plt.xlabel('Predicted')
     # plt.ylabel('True')
     # plt.show()
-    # plt.savefig(f'../figures/lgbm_optuna_cf_{fold}_confusion_matrix.png')
+    # #plt.savefig(f'../figures/lgbm_optuna_cf_{fold}_confusion_matrix.png')
 
-    # save the model
-    joblib.dump(
-        clf,
-        os.path.join(config.MODEL_OUTPUT, f'3class_lgbm__cf_{fold}.bin')
-    )
+    # # save the model
+    # joblib.dump(
+    #     clf,
+    #     os.path.join(config.MODEL_OUTPUT, f'3class_lgbm__cf_{fold}_P3.bin')
+    # )
 
 
 if __name__ == '__main__':
