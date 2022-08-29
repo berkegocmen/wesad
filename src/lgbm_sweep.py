@@ -3,6 +3,7 @@ import pandas as pd
 from sklearn.metrics import f1_score
 
 import wandb
+from config import *
 
 wandb.login()
 
@@ -31,8 +32,8 @@ def train(config=None):
         # set sweep config
         config = wandb.config
 
-        df = pd.read_csv('../data/3class/train_folds.csv')
-        df_test = pd.read_csv('../data/s_test.csv')
+        df = pd.read_csv(THREE_CLASS_EXTRACTED_FOLDS_v2)
+        df_test = pd.read_csv(THREE_CLASS_EXTRACTED_TEST_v2)
 
         # Split data into train and validation
         df_train = df[df.kfold != 1]
@@ -66,4 +67,4 @@ def train(config=None):
         wandb.log({'train_f1': train_f1, 'validation_f1': score, 'test_f1': score_test})
 
 
-wandb.agent(sweep_id, train, count=200)
+wandb.agent(sweep_id, train, count=100)

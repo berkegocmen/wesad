@@ -1,7 +1,7 @@
 import pandas as pd
-import feature_engineering
-from sklearn.model_selection import StratifiedKFold
+
 import config
+import feature_engineering
 
 df_train = pd.DataFrame()
 fold = 0
@@ -9,6 +9,8 @@ for S in range(1, 14):
     print(S, int(fold // 1))
     df = feature_engineering.generate_features(config.training_files[f'tf_{S}'], original=True,
                                                sample_rate='250000000ns')
+    print(df['chest_EDA'].mean(), df['chest_EDA'].std())
+
     df['kfold'] = int(fold // 1)
     df_train = pd.concat([df_train.reset_index(drop=True), df.reset_index(drop=True)])
 
@@ -25,7 +27,7 @@ df_valid_2 = feature_engineering.generate_features(config.test_files['f_2'], ori
 df_valid = pd.concat([df_valid.reset_index(drop=True), df_valid_2.reset_index(drop=True)])
 
 # save validation file
-df_valid.to_csv('../data/3class/s_folds_test.csv', index=False)
+df_valid.to_csv('../data/3class/s_folds_test_v2.csv', index=False)
 
 # df = pd.concat([df_valid.reset_index(drop=True), df_train.reset_index(drop=True)])
 # df = df_train
@@ -46,4 +48,4 @@ df_valid.to_csv('../data/3class/s_folds_test.csv', index=False)
 #     df.loc[v_, 'kfold'] = f
 
 # save the new csv with kfold column
-df_train.to_csv('../data/3class/test.csv', index=False)
+df_train.to_csv('../data/3class/test_v2.csv', index=False)

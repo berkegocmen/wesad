@@ -25,25 +25,23 @@ PARAMS_3 = {'max_bin': 32, 'min_data_in_leaf': 64, 'max_depth': 16, 'lambda_l1':
 def run(fold):
     # WANDB
     wandb.init(project="wesad", entity='berkegocmen',
-               name=f"lgbm_default_no-ACC_cf_{fold}",
-               tags=["3class", "default_params", 'lgbm', '4HZ', 'no-ACC'],
+               name=f"lgbm_default_extracted_cf_{fold}",
+               tags=["3class", "default_params", 'lgbm', '4HZ', 'extracted_feat'],
                group="3class_4hz")
 
     # Get training file and generate features
-    df_folds = pd.read_csv(config.THREE_CLASS_FOLDS)
-    df_test = pd.read_csv(config.THREE_CLASS_TEST)
+    df_folds = pd.read_csv(config.THREE_CLASS_EXTRACTED_FOLDS)
+    df_test = pd.read_csv(config.THREE_CLASS_EXTRACTED_TEST)
 
     df_train = df_folds[df_folds['kfold'] != fold]
     df_valid = df_folds[df_folds['kfold'] == fold]
 
-    # Get unique labels
-    labels = df_train['label'].unique()
-    labels_map = {1: 'baseline', 2: 'stress', 3: 'amusement', 4: 'meditation'}
+    # # Get unique labels
+    # labels = df_train['label'].unique()
+    # labels_map = {1: 'baseline', 2: 'stress', 3: 'amusement', 4: 'meditation'}
 
     # get the feature names
-    features = [f for f in df_train.columns if
-                f not in ['label', 'kfold', 'chest_ACC_0', 'chest_ACC_1', 'chest_ACC_2', 'wrist_ACC_0', 'wrist_ACC_1',
-                          'wrist_ACC_2']]
+    features = [f for f in df_train.columns if f not in ['label', 'kfold']]
 
     # initiate a Logistic Regression
     clf = LGBMClassifier()
