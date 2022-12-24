@@ -64,9 +64,11 @@ def extract_concat_pkl(path: str = '../data/S2/S2.pkl') -> pd.DataFrame:
     wrist_temp = wrist_temp.resample('1428571ns').ffill()
 
     labels = pd.DataFrame(labels)
-    # Concatenate the dataframes
-    df = pd.concat([chest_df, wrist_acc, wrist_bvp, wrist_eda, wrist_temp, labels], axis=1)
 
+    # Concatenate the dataframes
+    df = pd.concat([chest_df, wrist_acc, wrist_bvp, wrist_eda, wrist_temp], axis=1)
+    df = pd.concat([df.reset_index(), labels.iloc[:, 0]], axis=1)
+    df.set_index('time_stamps')
     # return the dataframe
     return df
 
